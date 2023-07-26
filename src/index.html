@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyFreq</title>
+  <link rel="stylesheet" href="style.css">
+  <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <span>Minhas Cadeiras</span>
+      <button onclick="openModal()" id="new">Adicionar Cadeira</i></button>
+    </div>
+
+    <div class="divTable">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Falta (Dias)</th>
+            <th>Status</th>
+            <th class="acao">Editar</th>
+            <th class="acao">Excluir</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-container">
+      <div class="modal">
+        <form>
+          <label for="m-nome">Nome</label>
+          <input id="m-nome" type="text" placeholder="Insira o nome da cadeira" required />
+
+          <label for="m-faltas">Faltas</label>
+          <input id="m-faltas" type="number" placeholder="Insira a quantidade de dias faltados" required />
+  
+          <label for="m-cargahoraria">Carga Horária</label>
+          <input id="m-cargahoraria" type="number" placeholder="Insira a carga horária TOTAL da disciplina" required />
+  
+          <label for="m-horasaula">Horas/Aula</label>
+          <input id="m-horasaula" type="number" placeholder="Insira a quantidade de horas por aula da disciplina" required />
+          <button id="btnSalvar">Salvar</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
