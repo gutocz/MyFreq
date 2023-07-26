@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const status = (subject.faltas * subject.horas_aula) > subject.carga_horaria_total * 2.5 ? "Reprovado" : "Aprovado";
       subjectBlock.innerHTML = `
         <h3>${subject.nome}</h3>
-        <p>Faltas: ${subject.faltas}/${((subject.carga_horaria_total * 0.3)/subject.horas_aula).toFixed(1)}</p>
+        <p>Faltas: ${subject.faltas}/${((subject.carga_horaria_total * 2.5)/subject.horas_aula).toFixed(1)}</p>
         <p>Status: ${status}</p>
         <button class="btnAddFalta">Adicionar Falta</button>
         <button class="btnRemoveFalta">Remover Falta</button>
