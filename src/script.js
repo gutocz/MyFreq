@@ -1,124 +1,100 @@
-const modal = document.querySelector('.modal-container')
-const tbody = document.querySelector('tbody')
-const sNome = document.querySelector('#m-nome')
-const sCargaHoraria = document.querySelector('#m-cargahoraria')
-const sHorasAula = document.querySelector('#m-horasaula')
-const sFaltas = document.querySelector('#m-faltas')
-const btnSalvar = document.querySelector('#btnSalvar')
-
-function setSStatus(sCargaHoraria, sHorasAula, sFaltas) {
-  let status = ''
-  let cargaHoraria = parseInt(sCargaHoraria.value)
-  let horasAula = parseInt(sHorasAula.value)
-  let faltas = parseInt(sFaltas.value)
-
-  if ((faltas * horasAula) > (cargaHoraria * 0.3)) {
-    status = 'Reprovado por Falta'
-  } else {
-    status = 'Aprovado'
-  }
-
-  return status
-}
-
-function setQuantidadeMaximadeFaltas(sCargaHoraria, sHorasAula) {
-  let cargaHoraria = parseInt(sCargaHoraria.value)
-  let horasAula = parseInt(sHorasAula.value)
-
-  return (cargaHoraria * 0.3) / horasAula
-}
-
-let itens
-let id
-
-function openModal(edit = false, index = 0) {
-  modal.classList.add('active')
-
-  modal.onclick = e => {
-    if (e.target.className.indexOf('modal-container') !== -1) {
-      modal.classList.remove('active')
+document.addEventListener("DOMContentLoaded", () => {
+    const subjectsContainer = document.getElementById("subjectsContainer");
+    const btnAddSubject = document.getElementById("btnAddSubject");
+    const btnSaveSubject = document.getElementById("btnSaveSubject");
+    const modal = document.getElementById("modal");
+    const subjectNameInput = document.getElementById("subjectName");
+    const totalHoursInput = document.getElementById("totalHours");
+    const classHoursInput = document.getElementById("classHours");
+  
+    // Carregar dados do LocalStorage ao carregar a página
+    let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
+  
+    function updateLocalStorage() {
+      localStorage.setItem("subjects", JSON.stringify(subjects));
     }
-  }
-
-  if (edit) {
-    sNome.value = itens[index].nome
-    sFaltas.value = itens[index].faltas
-    sCargaHoraria.value = itens[index].cargahoraria
-    sHorasAula.value = itens[index].horasaula
-    id = index
-  } else {
-    sNome.value = ''
-    sFaltas.value = ''
-    sCargaHoraria.value = ''
-    sHorasAula.value = ''
-  }
   
-}
-
-function editItem(index) {
-
-  openModal(true, index)
-}
-
-function deleteItem(index) {
-  itens.splice(index, 1)
-  setItensBD()
-  loadItens()
-}
-
-function insertItem(item, index) {
-  let status = setSStatus(sCargaHoraria, sHorasAula, sFaltas)
-  let quantidadeMaximaDeFaltas = setQuantidadeMaximadeFaltas(sCargaHoraria, sHorasAula)
-  let tr = document.createElement('tr')
-
-  tr.innerHTML = `
-    <td>${item.nome}</td>
-    <td>${item.faltas}/${quantidadeMaximaDeFaltas}</td>
-    <td>${status}</td>
-    <td class="acao">
-      <button onclick="editItem(${index})"><i class='bx bx-edit' ></i></button>
-    </td>
-    <td class="acao">
-      <button onclick="deleteItem(${index})"><i class='bx bx-trash'></i></button>
-    </td>
-  `
-  tbody.appendChild(tr)
-}
-
-btnSalvar.onclick = e => {
+    function createSubjectBlock(subject) {
+      const subjectBlock = document.createElement("div");
+      subjectBlock.className = "subject";
+      const status = (subject.faltas * subject.horas_aula) > subject.carga_horaria_total * 0.3 ? "Reprovado" : "Aprovado";
+      subjectBlock.innerHTML = `
+        <h3>${subject.nome}</h3>
+        <p>Faltas: ${subject.faltas}/${((subject.carga_horaria_total * 0.3)/subject.horas_aula).toFixed(1)}</p>
+        <p>Status: ${status}</p>
+        <button class="btnAddFalta">Adicionar Falta</button>
+        <button class="btnRemoveFalta">Remover Falta</button>
+        <button class="btnDeleteSubject">Deletar Cadeira</button>
+      `;
+      subjectBlock.querySelector(".btnAddFalta").addEventListener("click", () => addFalta(subject));
+      subjectBlock.querySelector(".btnRemoveFalta").addEventListener("click", () => removeFalta(subject));
+      subjectBlock.querySelector(".btnDeleteSubject").addEventListener("click", () => deleteSubject(subject));
+      subjectsContainer.appendChild(subjectBlock);
+    }
   
-  if (sNome.value == '' || sFaltas.value == '' || sCargaHoraria.value == '' || sHorasAula.value == '') {
-    return
-  }
-
-  e.preventDefault();
-
-  if (id !== undefined) {
-    itens[id].nome = sNome.value
-    itens[id].faltas = sFaltas.value
-    itens[id].cargahoraria = sCargaHoraria.value
-    itens[id].horasaula = sHorasAula.value
-  } else {
-    itens.push({'nome': sNome.value, 'faltas': sFaltas.value, 'cargahoraria': sCargaHoraria.value, 'horasaula': sHorasAula.value})
-  }
-
-  setItensBD()
-
-  modal.classList.remove('active')
-  loadItens()
-  id = undefined
-}
-
-function loadItens() {
-  itens = getItensBD()
-  tbody.innerHTML = ''
-  itens.forEach((item, index) => {
-    insertItem(item, index)
-  })
-
-}
-
-const getItensBD = () => JSON.parse(localStorage.getItem('dbfunc')) ?? []
-const setItensBD = () => localStorage.setItem('dbfunc', JSON.stringify(itens))
-
-loadItens()
+    function addFalta(subject) {
+      if (subject.faltas * subject.horas_aula < subject.carga_horaria_total) {
+        subject.faltas++;
+        updateLocalStorage();
+        updateSubjectBlocks();
+      }
+    }
+  
+    function removeFalta(subject) {
+      if (subject.faltas > 0) {
+        subject.faltas--;
+        updateLocalStorage();
+        updateSubjectBlocks();
+      }
+    }
+  
+    function deleteSubject(subject) {
+      const index = subjects.indexOf(subject);
+      if (index !== -1) {
+        subjects.splice(index, 1);
+        updateLocalStorage();
+        updateSubjectBlocks();
+      }
+    }
+  
+    function updateSubjectBlocks() {
+      subjectsContainer.innerHTML = "";
+      subjects.forEach(subject => createSubjectBlock(subject));
+    }
+  
+    function clearModalInputs() {
+      subjectNameInput.value = "";
+      totalHoursInput.value = "";
+      classHoursInput.value = "";
+    }
+  
+    btnAddSubject.addEventListener("click", () => modal.style.display = "block");
+  
+    btnSaveSubject.addEventListener("click", () => {
+      const nome = subjectNameInput.value.trim();
+      const carga_horaria_total = parseInt(totalHoursInput.value);
+      const horas_aula = parseInt(classHoursInput.value);
+      if (nome && carga_horaria_total && horas_aula) {
+        const newSubject = {
+          nome,
+          carga_horaria_total,
+          horas_aula,
+          faltas: 0,
+        };
+        subjects.push(newSubject);
+        updateLocalStorage();
+        createSubjectBlock(newSubject);
+        modal.style.display = "none";
+        clearModalInputs();
+      }
+    });
+  
+    modal.querySelector(".close").addEventListener("click", () => {
+      modal.style.display = "none";
+      clearModalInputs();
+    });
+  
+    // Inicializar a exibição das matérias
+    updateSubjectBlocks();
+  });
+  
